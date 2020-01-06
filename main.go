@@ -29,6 +29,11 @@ func main() {
 	orgFlag := flag.String("org", "", "")
 	emailFlag := flag.String("email", "", "")
 	outFlag := flag.String("out", "out.csr", "")
+	unitFlag := flag.String("unit", "", "")
+	countryFlag := flag.String("country", "", "")
+	provinceFlag := flag.String("province", "", "")
+	localityFlag := flag.String("locality", "", "")
+
 	flag.Parse()
 
 	oauthClient, err := google.DefaultClient(context.Background(), cloudkms.CloudPlatformScope)
@@ -49,10 +54,10 @@ func main() {
 	subj := pkix.Name{
 		CommonName:         *commonNameFlag,
 		Organization:       []string{*orgFlag},
-		OrganizationalUnit: []string{""},
-		Country:            []string{"US"},
-		Province:           []string{"California"},
-		Locality:           []string{"San Francisco"},
+		OrganizationalUnit: []string{*unitFlag},
+		Country:            []string{*countryFlag},
+		Province:           []string{*provinceFlag},
+		Locality:           []string{*localityFlag},
 	}
 
 	rawSubj := subj.ToRDNSequence()
