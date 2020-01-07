@@ -24,15 +24,15 @@ var (
 )
 
 func main() {
-	keyFlag := flag.String("key", "", "")
-	commonNameFlag := flag.String("common-name", "", "")
-	orgFlag := flag.String("org", "", "")
-	emailFlag := flag.String("email", "", "")
-	outFlag := flag.String("out", "out.csr", "")
-	unitFlag := flag.String("unit", "", "")
-	countryFlag := flag.String("country", "", "")
-	provinceFlag := flag.String("province", "", "")
-	localityFlag := flag.String("locality", "", "")
+	keyFlag := flag.String("key", "", "Resource path to the Google Cloud Key Version. Mandatory")
+	outFlag := flag.String("out", "out.csr", "Path to the output CSR file. Defaults to out.csr")
+	commonNameFlag := flag.String("common-name", "", "Common Name element of the CSR subject. Mandatory")
+	orgFlag := flag.String("org", "", "Organization element of the CSR subject. Omitted if unspecified")
+	emailFlag := flag.String("email", "", "Email element of the CSR subject. Omitted if unspecified")
+	unitFlag := flag.String("unit", "", "Organizational Unit element of the CSR subject. Omitted if unspecified")
+	countryFlag := flag.String("country", "", "Country element of the CSR subject. Omitted if unspecified")
+	provinceFlag := flag.String("province", "", "Province element of the CSR subject. Omitted if unspecified")
+	localityFlag := flag.String("locality", "", "Locality element of the CSR subject. Omitted if unspecified")
 	signatureAlgorithmFlag := flag.String("sign-algo", "", "'RSA' for SHA256WithRSAPSS | 'ECDSA' for ECDSAWithSHA256")
 
 	flag.Parse()
@@ -52,13 +52,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if *commonNameFlag == "" {
+		log.Fatal("common-name must be specified")
+	}
 	subj := pkix.Name{
 		CommonName:         *commonNameFlag,
-		Organization:       []string{*orgFlag},
-		OrganizationalUnit: []string{*unitFlag},
-		Country:            []string{*countryFlag},
-		Province:           []string{*provinceFlag},
-		Locality:           []string{*localityFlag},
+		Organization:       OptionalDnElement(*orgFlag),
+		OrganizationalUnit: OptionalDnElement(*unitFlag),
+		Country:            OptionalDnElement(*countryFlag),
+		Province:           OptionalDnElement(*provinceFlag),
+		Locality:           OptionalDnElement(*localityFlag),
 	}
 
 	rawSubj := subj.ToRDNSequence()
@@ -102,6 +105,14 @@ func main() {
 
 	if err := CreateCertificateRequest(f, template, s); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func OptionalDnElement(s string) []string {
+	if s == "" {
+		return nil
+	} else {
+		return []string{s}
 	}
 }
 
