@@ -33,7 +33,7 @@ func main() {
 	countryFlag := flag.String("country", "", "Country element of the CSR subject. Omitted if unspecified")
 	provinceFlag := flag.String("province", "", "Province element of the CSR subject. Omitted if unspecified")
 	localityFlag := flag.String("locality", "", "Locality element of the CSR subject. Omitted if unspecified")
-	signatureAlgorithmFlag := flag.String("sign-algo", "", "'RSA' for SHA256WithRSAPSS | 'ECDSA' for ECDSAWithSHA256")
+	signatureAlgorithmFlag := flag.String("sign-algo", "SHA256WithRSA", "SHA256WithRSA, SHA256WithRSAPSS, ECDSAWithSHA256. Defaults to SHA256WithRSA")
 
 	flag.Parse()
 
@@ -86,13 +86,14 @@ func main() {
 	//      https://cloud.google.com/kms/docs/algorithms
 	//      https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys#CryptoKeyVersionTemplate
 
-	if *signatureAlgorithmFlag == "RSA" {
+	if *signatureAlgorithmFlag == "SHA256WithRSA" {
+		template.SignatureAlgorithm = x509.SHA256WithRSA
+	} else if *signatureAlgorithmFlag == "SHA256WithRSAPSS" {
 		template.SignatureAlgorithm = x509.SHA256WithRSAPSS
-
-	} else if *signatureAlgorithmFlag == "ECDSA" {
+	} else if *signatureAlgorithmFlag == "ECDSAWithSHA256" {
 		template.SignatureAlgorithm = x509.ECDSAWithSHA256
 	} else {
-		log.Fatal("Sign-algorithm is not supported")
+		log.Fatal("Sign-algorithm " + *signatureAlgorithmFlag + " is not supported")
 	}
 
 	// template.SignatureAlgorithm = x509.ECDSAWithSHA256 // x509.SHA256WithRSAPSS
