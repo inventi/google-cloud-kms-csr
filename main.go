@@ -52,13 +52,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if *commonNameFlag == "" {
+		log.Fatal("common-name must be specified")
+	}
 	subj := pkix.Name{
 		CommonName:         *commonNameFlag,
-		Organization:       []string{*orgFlag},
-		OrganizationalUnit: []string{*unitFlag},
-		Country:            []string{*countryFlag},
-		Province:           []string{*provinceFlag},
-		Locality:           []string{*localityFlag},
+		Organization:       OptionalDnElement(*orgFlag),
+		OrganizationalUnit: OptionalDnElement(*unitFlag),
+		Country:            OptionalDnElement(*countryFlag),
+		Province:           OptionalDnElement(*provinceFlag),
+		Locality:           OptionalDnElement(*localityFlag),
 	}
 
 	rawSubj := subj.ToRDNSequence()
@@ -102,6 +105,14 @@ func main() {
 
 	if err := CreateCertificateRequest(f, template, s); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func OptionalDnElement(s string) []string {
+	if s == "" {
+		return nil
+	} else {
+		return []string{s}
 	}
 }
 
